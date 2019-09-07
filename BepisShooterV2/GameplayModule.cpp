@@ -2,18 +2,19 @@
 #include <iostream>
 
 GameplayModule::GameplayModule() {
+	// initalize player
 	player.setPosition(100.f, 100.f);
 	player.setSize(sf::Vector2f(25.f, 25.f));
 	player.setFillColor(sf::Color::Cyan);
-
-	globalBound.setPosition(0.f, 0.f);
-	globalBound.setSize(sf::Vector2f(800.f, 600.f));
 }
 
 void GameplayModule::Update() {
+	// Get deltaTime
 	float deltaTime = deltaTimeClock.restart().asSeconds();
-	float speed_ = movingDiagonally() ? speed / sqrt(2) : speed;
+	// Calculate speed (whether moving diagonally)
+	float speed_ = movingDiagonally() ? playerSpeed / sqrt(2) : playerSpeed;
 
+	// movement handler
 	if (moveDown)
 		player.move(0.f, speed_ * deltaTime);
 	if (moveUp)
@@ -23,59 +24,54 @@ void GameplayModule::Update() {
 	if (moveLeft)
 		player.move(-speed_ * deltaTime, 0.f);
 
+	// check whether the Z key has been pressed and if there is no cooldown
 	if (shoot && shootCooldownTimer.getElapsedTime() > shootCooldown) {
+		// restart the cooldown timer
 		shootCooldownTimer.restart();
-		bullets.push_back(Bullet(270, 500.f, player.getPosition().x, player.getPosition().y));
+		// fire a bullet (by adding it to the bullet storage)
+		bulletStorage.CreateBullet(270, 500.f, player.getPosition().x, player.getPosition().y);
 	}
-
-	for (auto& bullet : bullets) {
-		bullet.Update();
-	}
-
-	if (gcTimer.getElapsedTime() > gcCooldown) {
-		auto vecCopy = bullets;
-		bullets.clear();
-		// Concurrent mark phase
-		for (auto it = vecCopy.begin(); it != vecCopy.end(); ++it) {
-			if (globalBound.getGlobalBounds().intersects(it->GetGlobalBounds())) {
-				bullets.push_back(*it);
-			}
-		}
-		std::cout << "[GC] Out of " << vecCopy.size() << " elements, " << vecCopy.size() - bullets.size() << " got deleted leaving " << bullets.size() << " elements.\n";
-		gcTimer.restart();
-	}
-
-	
+	// update bullets
+	bulletStorage.Update();	
 }
 
 void GameplayModule::Draw(std::shared_ptr<sf::RenderWindow> window) {
+	// draw player entity
 	window->draw(player);
-	for (auto& bullet : bullets) {
-		bullet.Draw(window);
-	}
+	// draw bullets
+	bulletStorage.DrawBullets(window);
 }
 
 void GameplayModule::EventHandler(sf::Event& event, std::shared_ptr<sf::RenderWindow> window) {
+	// switch (event type)
 	switch (event.type) {
+		// Key pressed event
 	case sf::Event::KeyPressed:
+		// switch (pressed key's code)
 		switch (event.key.code) {
+			// Up arrow pressed (movement)
 		case sf::Keyboard::Up:
 			moveUp = true;
 			break;
+			// Down arrow pressed (movement)
 		case sf::Keyboard::Down:
 			moveDown = true;
 			break;
+			// Right arrow pressed (movement)
 		case sf::Keyboard::Right:
 			moveRight = true;
 			break;
+			// Left arrow pressed (movement)
 		case sf::Keyboard::Left:
 			moveLeft = true;
 			break;
+			// Z key pressed (shoot)
 		case sf::Keyboard::Z:
 			shoot = true;
 			break;
 		}
 		break;
+		// Key released event
 	case sf::Event::KeyReleased:
 		switch (event.key.code) {
 		case sf::Keyboard::Up:
@@ -98,12 +94,13 @@ void GameplayModule::EventHandler(sf::Event& event, std::shared_ptr<sf::RenderWi
 	}
 }
 
+// Detect diagonal movement by checking each possibility
 bool GameplayModule::movingDiagonally() {
 	return
 		(
-			(moveDown && moveRight) ||
-			(moveDown && moveLeft) ||
-			(moveUp && moveLeft) ||
-			(moveUp && moveRight)
+			(moveDown && moveRight) || // south-east movement
+			(moveDown && moveLeft) || // south-west movement
+			(moveUp && moveLeft) || // north-west movement
+			(moveUp && moveRight) // north-east movement
 		);
 }

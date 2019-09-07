@@ -157,6 +157,7 @@
   <ItemGroup>
     <ClCompile Include="BepisShooterApp.cpp" />
     <ClCompile Include="Bullet.cpp" />
+    <ClCompile Include="BulletStorage.cpp" />
     <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="GameplayModule.cpp" />
     <ClCompile Include="main.cpp" />
@@ -166,6 +167,7 @@
     <ClInclude Include="App.hpp" />
     <ClInclude Include="BepisShooterApp.hpp" />
     <ClInclude Include="Bullet.hpp" />
+    <ClInclude Include="BulletStorage.hpp" />
     <ClInclude Include="Button.hpp" />
     <ClInclude Include="Enemy.hpp" />
     <ClInclude Include="GameplayModule.hpp" />
