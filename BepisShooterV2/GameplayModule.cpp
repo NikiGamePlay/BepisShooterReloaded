@@ -29,7 +29,7 @@ void GameplayModule::Update() {
 		// restart the cooldown timer
 		shootCooldownTimer.restart();
 		// fire a bullet (by adding it to the bullet storage)
-		bulletStorage.CreateBullet(270, 500.f, player.getPosition().x, player.getPosition().y);
+		bulletStorage.CreateBullet(270, bulletSpeed, player.getPosition().x, player.getPosition().y);
 	}
 	// update bullets
 	bulletStorage.Update();	
